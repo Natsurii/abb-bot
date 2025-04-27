@@ -1,0 +1,20 @@
+[project]
+name = "abb-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.11.3",
+]
+
+classifiers = ["Private :: Do Not Upload"]
+
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py313"
+
+[tool.ruff.lint]
+select=["ALL"]

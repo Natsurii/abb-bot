@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "seatonjiang.gitmoji-vscode",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        "njpwerner.autodocstring",
+        "njqdev.vscode-python-typehint",
+        "psioniq.psi-header"
+    ]
+}
