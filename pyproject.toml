@@ -20,6 +20,7 @@ target-version = "py313"
 
 [tool.ruff.lint]
 select=["ALL"]
+ignore = ["S101", "INP001"]
 
 [pytest]
 testpaths = ["tests"]
