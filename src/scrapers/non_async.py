@@ -77,7 +77,7 @@ class RequestsScraper(Scraper):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",  # noqa: E501
         }
 
-    def scrape(self, url: Website | str) -> str:
+    def scrape(self, url: Website) -> str:
         """Scrape website using requests.
 
         Args:
@@ -87,9 +87,7 @@ class RequestsScraper(Scraper):
             str: The content of the website
 
         """
-        if isinstance(url, str):
-            url = Website(url=url)
-        response = requests.get(url.url, timeout=30, headers=self.headers)
+        response = requests.get(str(url.url), timeout=30, headers=self.headers)
         response.raise_for_status()
         return response.text
 
@@ -102,7 +100,7 @@ class ScrapyScraper(Scraper):
         self.url: str = ""
         raise NotImplementedError
 
-    def scrape(self, url: Website | str) -> str:
+    def scrape(self, url: Website) -> str:
         """Scrape using scrapy.
 
         Args:
@@ -115,8 +113,6 @@ class ScrapyScraper(Scraper):
             str: The scraped HTML in string.
 
         """
-        if isinstance(url, str):
-            self.url: str = Website(url=url).url
         raise NotImplementedError
 
 
