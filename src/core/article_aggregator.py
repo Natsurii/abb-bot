@@ -1,6 +1,6 @@
 """Copyright (c) 2025 Natsurii.
 
-Created Date: Sunday, April 27th 2025, 7:48:53 pm
+Created Date: Saturday, May 3rd 2025, 10:59:52 am
 Author: Natsurii
 
 Redistribution and use in source and binary forms, with or without
@@ -34,18 +34,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
 HISTORY:
 Date      	By	Comments
 ----------	---	----------------------------------------------------------
+2025-05-12	NAT Initial code
 """
 
-from models.website import Website
-from scrapers.non_async import ScraperFactory, Scrapers
 
-# site = Website(url="http://abante.com.ph/category/news/")
-site = "https://httpbin.org/get"
-site2 = Website(url="https://remate.ph/category/lcl/")
-scraper = ScraperFactory(Scrapers.REQUESTS).get_scraper()
-response = scraper.scrape(site)
-print(response)
+def main() -> None:
+    """Declare main function."""
 
-# scraper = ScraperFactory(Scrapers.REQUESTS).get_scraper()
-# response = scraper.scrape(site2)
-# print(response)
+
+if "__name__" == "__main__":
+    main()

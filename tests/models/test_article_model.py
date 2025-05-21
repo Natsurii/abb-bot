@@ -49,7 +49,7 @@ from src.models.article import Article
 def test_passes_object_creation() -> None:
     """Test successful object creation of Article model."""
     model: Article = Article(title="Test", author="Test", content="Test")
-    assert isinstance(model, Article)  # noqa: S101
+    assert isinstance(model, Article)
 
 
 def test_fails_validation_error() -> None:
@@ -83,13 +83,13 @@ def test_invalid_uuid_raises_validation_error() -> None:
 def test_default_id_is_uuid() -> None:
     """Test that the default id is generated and is a UUID."""
     model: Article = Article(title="Title", author="Author", content="Content")
-    assert isinstance(model.id, type(uuid4()))  # noqa: S101
+    assert isinstance(model.id, type(uuid4()))
 
 
 def test_tags_defaults_to_empty_list() -> None:
     """Test that tags default to an empty list."""
     model: Article = Article(title="Title", author="Author", content="Content")
-    assert model.tags == []  # noqa: S101
+    assert model.tags == []
 
 
 def test_summary_can_be_none() -> None:
@@ -100,7 +100,7 @@ def test_summary_can_be_none() -> None:
         content="Test",
         summary=None,
     )
-    assert model.summary is None  # noqa: S101
+    assert model.summary is None
 
 
 def test_custom_tags_assignment() -> None:
@@ -112,7 +112,7 @@ def test_custom_tags_assignment() -> None:
         content="Content",
         tags=tags,
     )
-    assert model.tags == tags  # noqa: S101
+    assert model.tags == tags
 
 
 def test_published_at_accepts_datetime() -> None:
@@ -126,7 +126,7 @@ def test_published_at_accepts_datetime() -> None:
         content="Content",
         published_at=publish_time,
     )
-    assert model.published_at == publish_time  # noqa: S101
+    assert model.published_at == publish_time
 
 
 def test_valid_url_passes() -> None:
@@ -137,7 +137,7 @@ def test_valid_url_passes() -> None:
         content="Test",
         url="https://example.com",
     )
-    assert str(model.url) == "https://example.com/"  # noqa: S101
+    assert str(model.url) == "https://example.com/"
 
 
 def test_empty_strings_are_accepted() -> None:
@@ -147,6 +147,6 @@ def test_empty_strings_are_accepted() -> None:
         author="",
         content="",
     )
-    assert model.title == ""  # noqa: S101
-    assert model.author == ""  # noqa: S101
-    assert model.content == ""  # noqa: S101
+    assert model.title == ""
+    assert model.author == ""
+    assert model.content == ""

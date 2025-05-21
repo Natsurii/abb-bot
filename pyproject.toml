@@ -5,9 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "boto3>=1.38.19",
+    "dotenv>=0.9.9",
+    "lxml>=5.4.0",
     "pydantic>=2.11.3",
     "pytest>=8.3.5",
+    "python-dotenv>=1.1.0",
     "requests>=2.32.3",
+    "selenium>=4.32.0",
+    "supabase>=2.15.1",
+    "webdriver-manager>=4.0.2",
 ]
 
 classifiers = ["Private :: Do Not Upload"]
@@ -24,3 +31,6 @@ ignore = ["S101", "INP001"]
 
 [pytest]
 testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+"scrapers.chromedriver" = ["*.exe"]

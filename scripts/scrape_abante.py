@@ -1,6 +1,7 @@
-"""Copyright (c) 2025 Natsurii.
+"""
+Copyright (c) 2025 Natsurii.
 
-Created Date: Sunday, April 27th 2025, 7:48:53 pm
+Created Date: Monday, May 12th 2025, 1:13:50 pm
 Author: Natsurii
 
 Redistribution and use in source and binary forms, with or without
@@ -34,18 +35,30 @@ THE POSSIBILITY OF SUCH DAMAGE.
 HISTORY:
 Date      	By	Comments
 ----------	---	----------------------------------------------------------
+2025-05-12	NAT	Initial script creation
 """
 
+from lxml import html
 from models.website import Website
 from scrapers.non_async import ScraperFactory, Scrapers
 
-# site = Website(url="http://abante.com.ph/category/news/")
-site = "https://httpbin.org/get"
-site2 = Website(url="https://remate.ph/category/lcl/")
-scraper = ScraperFactory(Scrapers.REQUESTS).get_scraper()
-response = scraper.scrape(site)
-print(response)
+# site = Website(url="https://www.abante.com.ph/category/news/")
+# scraper = ScraperFactory().get_scraper(Scrapers.SELENIUM)
 
-# scraper = ScraperFactory(Scrapers.REQUESTS).get_scraper()
-# response = scraper.scrape(site2)
-# print(response)
+# html = scraper.scrape(site)
+
+
+# with open("abante_scrape2.html", "w+", encoding="utf-8") as file:
+#     file.write(html)
+html_str = ""
+with open("abante_scrape2.html", "r", encoding="utf-8") as file:
+    html_str = file.read()
+tree = html.fromstring(html_str)
+
+# Find all <a> elements with the class 'elementor-post__thumbnail__link'
+links = tree.xpath(".//a[@class='elementor-post__thumbnail__link']")
+
+# Print href or text
+for link in links:
+    href = link.get("href")
+    print(href)

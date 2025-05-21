@@ -37,12 +37,35 @@ Date      	By	Comments
 2025-04-27	NAT	Initial file creation.
 """
 
+import os
+import platform
+import time
 from abc import ABC, abstractmethod
 from enum import Enum
 
 import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from webdriver_manager.chrome import (
+    ChromeDriverManager,
+)  # Import WebDriverManager
 
 from models.website import Website
+
+if platform.system() == "Windows":
+    CHROME_DRIVER_PATH = os.path.join(
+        os.path.dirname(__file__),
+        "chromedriver",
+        "chromedriver.exe",
+    )
+elif platform.system() == "Linux":
+    CHROME_DRIVER_PATH = None
+    raise NotImplementedError
 
 
 class Scrapers(Enum):
@@ -50,6 +73,7 @@ class Scrapers(Enum):
 
     REQUESTS = 1
     SCRAPY = 2
+    SELENIUM = 3
 
 
 class Scraper(ABC):
@@ -116,6 +140,63 @@ class ScrapyScraper(Scraper):
         raise NotImplementedError
 
 
+class SeleniumScraper(Scraper):
+    """Selenium Scraper Concrete Class."""
+
+    def __init__(self) -> None:
+        """Initialize selenium scraper."""
+        self.wait: float = 25.0
+        self.scroll_down: bool = True
+        self.scroll_down_until: float = 10.0
+
+    def scrape(self, url: Website) -> str:
+        """Scrape the given website url.
+
+        Args:
+            url (Website): The website needed to be scraped
+
+        Returns:
+            str: The html scraped in string.
+
+        """
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        # Use ChromeDriverManager to automatically download and manage the driver
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        try:
+            driver.get(str(url.url))
+            WebDriverWait(driver, self.wait).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+
+            if self.scroll_down:
+                scroll_pause = 1
+                end_time = time.time() + self.scroll_down_until
+                last_height = driver.execute_script(
+                    "return document.body.scrollHeight"
+                )
+
+                while time.time() < end_time:
+                    driver.execute_script(
+                        "window.scrollTo(0, document.body.scrollHeight);"
+                    )
+                    time.sleep(scroll_pause)
+                    new_height = driver.execute_script(
+                        "return document.body.scrollHeight"
+                    )
+                    if new_height == last_height:
+                        break
+                    last_height = new_height
+            return driver.page_source
+
+        finally:
+            driver.quit()
+
+
 class ScraperFactory:
     """Scraper Factory."""
 
@@ -136,6 +217,8 @@ class ScraperFactory:
                 return RequestsScraper()
             case Scrapers.SCRAPY:
                 return ScrapyScraper()
+            case Scrapers.SELENIUM:
+                return SeleniumScraper()
             case _:
                 msg = "Invalid supplied scraper."
                 raise ValueError(msg)

@@ -48,9 +48,10 @@ class Article(BaseModel):
 
     id: UUID = Field(default_factory=uuid4)
     title: str
-    author: str
-    content: str
+    author: str | None = None
+    content: str | None = None
     summary: str | None = None
     tags: list[str] | None = []
     published_at: datetime | None = None
     url: HttpUrl | None = None
+    s3_img: HttpUrl | None = None
