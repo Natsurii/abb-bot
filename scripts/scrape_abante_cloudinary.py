@@ -88,22 +88,19 @@ def insert_article(article: Article) -> Optional[dict]:
         article_data["id"] = str(article_data["id"])
         if article_data["url"]:  # Check if URL exists before converting
             article_data["url"] = str(article_data["url"])
-        if article_data["s3_img"]:  # Check if Cloudinary URL exists
+        # Retain s3_img key, but ensure it's converted to string if it holds a Cloudinary URL
+        if article_data["s3_img"]:
             article_data["s3_img"] = str(article_data["s3_img"])
 
         # Insert the data into the 'articles' table
         # Supabase will automatically handle fields that are None
         response = supabase.table("articles").insert(article_data).execute()
 
-        # Check for errors
-        if response.error:
-            print(f"Error inserting article: {response.error}")
-            return None
-
-        # Return the inserted data
+        # If the insert was successful (no exception raised), response.data will contain the inserted row(s)
         return response.data
 
     except Exception as e:
+        # This block will now catch any API errors from Supabase as well
         print(f"An error occurred during article insertion: {e}")
         return None
 
