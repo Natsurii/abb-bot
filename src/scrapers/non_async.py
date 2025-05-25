@@ -57,15 +57,15 @@ from webdriver_manager.chrome import (
 
 from models.website import Website
 
-if platform.system() == "Windows":
-    CHROME_DRIVER_PATH = os.path.join(
-        os.path.dirname(__file__),
-        "chromedriver",
-        "chromedriver.exe",
-    )
-elif platform.system() == "Linux":
-    CHROME_DRIVER_PATH = None
-    raise NotImplementedError
+# if platform.system() == "Windows":
+#     CHROME_DRIVER_PATH = os.path.join(
+#         os.path.dirname(__file__),
+#         "chromedriver",
+#         "chromedriver.exe",
+#     )
+# elif platform.system() == "Linux":
+#     CHROME_DRIVER_PATH = None
+#     raise NotImplementedError
 
 
 class Scrapers(Enum):
