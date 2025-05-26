@@ -32,9 +32,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
 
 HISTORY:
-Date      	By	Comments
-----------	---	----------------------------------------------------------
-2025-04-27	NAT	Initial file creation.
+Date        By  Comments
+----------  --- ----------------------------------------------------------
+2025-04-27  NAT Initial file creation.
 """
 
 import os
@@ -45,15 +45,21 @@ from enum import Enum
 
 import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+
+# Import Chrome-specific components
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
+
+# Import Firefox-specific components
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from webdriver_manager.chrome import (
-    ChromeDriverManager,
-)  # Import WebDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager  # Import for Firefox
 
 from models.website import Website
 
@@ -74,6 +80,7 @@ class Scrapers(Enum):
     REQUESTS = 1
     SCRAPY = 2
     SELENIUM = 3
+    FIREFOX = 4  # Added Firefox option
 
 
 class Scraper(ABC):
@@ -141,7 +148,7 @@ class ScrapyScraper(Scraper):
 
 
 class SeleniumScraper(Scraper):
-    """Selenium Scraper Concrete Class."""
+    """Selenium Scraper Concrete Class (for Chrome)."""
 
     def __init__(self) -> None:
         """Initialize selenium scraper."""
@@ -159,13 +166,15 @@ class SeleniumScraper(Scraper):
             str: The html scraped in string.
 
         """
-        chrome_options = Options()
+        chrome_options = ChromeOptions()  # Using ChromeOptions
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
 
         # Use ChromeDriverManager to automatically download and manage the driver
-        service = Service(ChromeDriverManager().install())
+        service = ChromeService(
+            ChromeDriverManager().install()
+        )  # Using ChromeService
         driver = webdriver.Chrome(service=service, options=chrome_options)
         try:
             driver.get(str(url.url))
@@ -197,6 +206,97 @@ class SeleniumScraper(Scraper):
             driver.quit()
 
 
+# --- New SeleniumFirefoxScraper Class for ESR ---
+class SeleniumFirefoxScraper(Scraper):
+    """Selenium Scraper Concrete Class (for Firefox ESR)."""
+
+    def __init__(self) -> None:
+        """Initialize selenium firefox scraper for ESR."""
+        self.wait: float = 25.0
+        self.scroll_down: bool = True
+        self.scroll_down_until: float = 10.0
+
+        self.firefox_options = FirefoxOptions()
+        self.firefox_options.add_argument(
+            "-headless"
+        )  # Firefox uses "-headless" for headless mode
+
+        # --- IMPORTANT: Explicitly set the binary location for Firefox ESR ---
+        # You need to find the exact path to your firefox-esr executable on your Linux system.
+        # Common paths include: '/usr/bin/firefox-esr', '/usr/lib/firefox-esr/firefox', etc.
+        # You can usually find it by running 'which firefox-esr' or 'whereis firefox-esr' in your terminal.
+
+        # Placeholder path - **YOU MUST VERIFY AND ADJUST THIS PATH**
+        firefox_esr_binary_path = "/usr/bin/firefox-esr"
+
+        if not os.path.exists(firefox_esr_binary_path):
+            error_msg = (
+                f"Firefox ESR binary not found at '{firefox_esr_binary_path}'. "
+                "Please ensure Firefox ESR is installed on your system "
+                "and update 'firefox_esr_binary_path' in SeleniumFirefoxScraper's __init__ "
+                "with the correct path."
+            )
+            print(f"ERROR: {error_msg}")
+            raise FileNotFoundError(error_msg)
+
+        self.firefox_options.binary_location = firefox_esr_binary_path
+        # --- End of explicit binary setting ---
+
+        # Geckodriver service (managed by webdriver_manager)
+        # GeckoDriverManager will download a geckodriver compatible with the *specified* browser binary.
+        self.service = FirefoxService(GeckoDriverManager().install())
+        self.driver = None  # Initialize driver to None for reuse
+
+    def scrape(self, url: Website) -> str:
+        """Scrape the given website url using Firefox ESR.
+
+        Args:
+            url (Website): The website needed to be scraped
+
+        Returns:
+            str: The html scraped in string.
+
+        """
+        # Re-initialize driver if it's not active
+        if self.driver is None:
+            self.driver = webdriver.Firefox(
+                service=self.service, options=self.firefox_options
+            )
+            self.driver.set_page_load_timeout(60)  # Set a generous timeout
+
+        try:
+            self.driver.get(str(url.url))
+            WebDriverWait(self.driver, self.wait).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+
+            if self.scroll_down:
+                scroll_pause = 1
+                end_time = time.time() + self.scroll_down_until
+                last_height = self.driver.execute_script(
+                    "return document.body.scrollHeight"
+                )
+
+                while time.time() < end_time:
+                    self.driver.execute_script(
+                        "window.scrollTo(0, document.body.scrollHeight);"
+                    )
+                    time.sleep(scroll_pause)
+                    new_height = self.driver.execute_script(
+                        "return document.body.scrollHeight"
+                    )
+                    if new_height == last_height:
+                        break
+                    last_height = new_height
+            return self.driver.page_source
+
+        finally:
+            # Quit the driver after each scrape call.
+            if self.driver:
+                self.driver.quit()
+                self.driver = None  # Reset for next use
+
+
 class ScraperFactory:
     """Scraper Factory."""
 
@@ -217,8 +317,10 @@ class ScraperFactory:
                 return RequestsScraper()
             case Scrapers.SCRAPY:
                 return ScrapyScraper()
-            case Scrapers.SELENIUM:
+            case Scrapers.SELENIUM:  # This will now specifically be for Chrome
                 return SeleniumScraper()
+            case Scrapers.FIREFOX:  # Added case for Firefox ESR
+                return SeleniumFirefoxScraper()
             case _:
                 msg = "Invalid supplied scraper."
                 raise ValueError(msg)
