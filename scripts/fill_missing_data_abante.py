@@ -57,7 +57,7 @@ def scrape_missing_info(url: str) -> dict:
     Uses SeleniumScraper if a dynamic page.
     """
     print(f"Scraping URL: {url}")
-    scraper: Scraper = ScraperFactory().get_scraper(Scrapers.SELENIUM)
+    scraper: Scraper = ScraperFactory().get_scraper(Scrapers.REQUESTS)
 
     site_obj = Website(url=url)
     html_content = scraper.scrape(site_obj)
