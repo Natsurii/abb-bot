@@ -1,4 +1,5 @@
 import os
+import platform
 import uuid
 from datetime import datetime
 from io import BytesIO
@@ -158,7 +159,11 @@ def main():
     Main function to scrape, process, and save articles to Supabase.
     """
     site = Website(url="https://www.abante.com.ph/category/news/")
-    scraper: Scraper = ScraperFactory().get_scraper(Scrapers.SELENIUM)
+
+    if platform.system() == "Windows":
+        scraper: Scraper = ScraperFactory().get_scraper(Scrapers.SELENIUM)
+    elif platform.system() == "Linux":
+        scraper: Scraper = ScraperFactory().get_scraper(Scrapers.FIREFOX)
 
     print(f"Scraping URL: {site.url}")
     html_str = scraper.scrape(site)
