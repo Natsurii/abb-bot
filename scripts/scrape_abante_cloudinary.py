@@ -62,6 +62,7 @@ import cloudinary
 import cloudinary.uploader
 
 
+import random
 from models.article import Article
 
 # Load environment variables from .env file
@@ -221,7 +222,9 @@ def main():
     Main function to scrape, process, and save articles to Supabase,
     handling image uploads and updates to avoid duplicates.
     """
-    site = Website(url="https://www.abante.com.ph/category/news/")
+
+    page = ["news", "ent", "sports3", "metro", "vismin2"]
+    site = Website(url=f"https://www.abante.com.ph/category/{random.choice(page)}/")
 
     if platform.system() == "Windows":
         scraper: Scraper = ScraperFactory().get_scraper(Scrapers.SELENIUM)
@@ -331,3 +334,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
